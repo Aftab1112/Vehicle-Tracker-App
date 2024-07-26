@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline } from "react-leaflet";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { LeafletTrackingMarker } from "react-leaflet-tracking-marker";
+import constants from "../constants/Constants";
 
 const center = [17.385044, 78.486671];
 
 const Map = () => {
   const [locations, setLocations] = useState([]);
-  const [position, setPosition] = useState(null);
+  const [currentPosition, setCurrentPosition] = useState(null);
+  const [previousPosition, setPreviousPosition] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  const [intervalId, setIntervalId] = useState(null);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -16,12 +22,12 @@ const Map = () => {
         const response = await axios.get("http://localhost:3001/api/locations");
         if (Array.isArray(response.data)) {
           setLocations(response.data);
-          setPosition(response.data[0]);
+          setCurrentPosition(response.data[0]);
         } else {
-          console.error("Invalid data format:", response.data);
+          console.error("Invalid data format : ", response.data);
         }
       } catch (error) {
-        console.error("Error fetching locations:", error);
+        console.error("Error fetching locations : ", error);
       }
     };
 
@@ -29,32 +35,37 @@ const Map = () => {
   }, []);
 
   useEffect(() => {
-    if (locations.length > 0) {
+    if (isPlaying && locations.length > 0) {
       const interval = setInterval(() => {
-        setPosition((prevPosition) => {
+        setPreviousPosition(currentPosition);
+        setCurrentPosition((prevPosition) => {
           const currentIndex = locations.findIndex(
             (loc) => loc === prevPosition
           );
           const nextIndex = (currentIndex + 1) % locations.length;
           return locations[nextIndex];
         });
-      }, 5000);
+      }, 2500 / speed);
 
+      setIntervalId(interval);
       return () => clearInterval(interval);
+    } else if (!isPlaying) {
+      clearInterval(intervalId);
     }
-  }, [locations]);
+  }, [isPlaying, speed, locations, currentPosition]);
+
+  const togglePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const increaseSpeed = () => {
+    setSpeed((prevSpeed) => (prevSpeed < 5 ? prevSpeed + 1 : 1));
+  };
 
   const vehicleIcon = new L.Icon({
     iconUrl: "/vehicle-icon.png",
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-  });
-
-  const markerIcon = new L.Icon({
-    iconUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
+    iconSize: [38, 38],
+    iconAnchor: [18, 18],
   });
 
   return (
@@ -69,14 +80,20 @@ const Map = () => {
           style={{ height: "500px", width: "100%" }}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url={constants.maptiler.url}
+            attribution={constants.maptiler.attribution}
           />
-          {position && (
+          {currentPosition && (
             <>
-              <Marker
-                position={[position.latitude, position.longitude]}
-                icon={markerIcon}
+              <LeafletTrackingMarker
+                icon={vehicleIcon}
+                position={[currentPosition.latitude, currentPosition.longitude]}
+                previousPosition={
+                  previousPosition
+                    ? [previousPosition.latitude, previousPosition.longitude]
+                    : [currentPosition.latitude, currentPosition.longitude]
+                }
+                duration={1000}
               />
               <Polyline
                 positions={locations.map((loc) => [
@@ -87,6 +104,20 @@ const Map = () => {
             </>
           )}
         </MapContainer>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={togglePlayPause}
+            className="px-4 py-2 mr-2 text-white bg-blue-500 rounded-md"
+          >
+            {isPlaying ? "Pause" : "Play"}
+          </button>
+          <button
+            onClick={increaseSpeed}
+            className="px-4 py-2 text-white bg-green-500 rounded-md"
+          >
+            {speed}x
+          </button>
+        </div>
       </div>
     </div>
   );

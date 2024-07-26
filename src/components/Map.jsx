@@ -20,7 +20,9 @@ const Map = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/locations");
+        const response = await axios.get(
+          "https://vehicle-tracker-app-1.onrender.com/api/locations"
+        );
         if (Array.isArray(response.data)) {
           setLocations(response.data);
           setCurrentPosition(response.data[0]);

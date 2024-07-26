@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { LeafletTrackingMarker } from "react-leaflet-tracking-marker";
 import constants from "../constants/Constants";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const center = [17.385044, 78.486671];
 
@@ -107,15 +108,19 @@ const Map = () => {
         <div className="flex justify-center mt-4">
           <button
             onClick={togglePlayPause}
-            className="px-4 py-2 mr-2 text-white bg-blue-500 rounded-md"
+            className="px-4 py-2 mr-5 text-xl font-semibold text-white bg-blue-500 rounded-md w-28"
           >
-            {isPlaying ? "Pause" : "Play"}
+            {isPlaying ? (
+              <FontAwesomeIcon icon="fa-solid fa-pause" />
+            ) : (
+              <FontAwesomeIcon icon="fa-solid fa-play" />
+            )}
           </button>
           <button
             onClick={increaseSpeed}
-            className="px-4 py-2 text-white bg-green-500 rounded-md"
+            className="px-4 py-2 text-xl font-semibold text-white bg-green-500 rounded-md w-28"
           >
-            {speed}x
+            {speed} X
           </button>
         </div>
       </div>

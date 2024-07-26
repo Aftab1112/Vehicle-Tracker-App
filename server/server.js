@@ -8,7 +8,13 @@ import { dirname } from "path";
 const app = express();
 const PORT = 3001;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [process.env.FRONTEND_URL],
+    methods: ["GET"],
+    credentials: true,
+  })
+);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

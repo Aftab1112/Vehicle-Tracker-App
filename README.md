@@ -59,7 +59,7 @@ This is a Vehicle Tracker App built with Vite, React, JSX, Tailwind CSS, and Exp
 
 ## Dependencies
 
-- `react`, `react-dom`, `react-leaflet`, `leaflet`, `axios`, `express`, `cors`, `ts-node`, `typescript`
+- `react`, `react-dom`, `react-leaflet`, `leaflet`, `axios`, `express`, `cors`, `ts-node`,
 - Dev: `vite`, `tailwindcss`, `postcss`, `autoprefixer`
 
 
